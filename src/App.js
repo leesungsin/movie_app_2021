@@ -1,6 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import axios from 'axios'
+import Movie from "./Movie";
+import './App.css';
 
 // props 에 전달되는 인자가 많을경우, ES6의 구조체 분해해서 사용해도 됨
 // function Food({ fav }) {
@@ -153,7 +155,17 @@ class App extends React.Component {
     // javascripts 에게 getMovies() 함수는 시간이 필요해 라고 알려줘야함 -> async 키워드
     getMovies = async () => {
         // 실제 시간이 필요한 대상앞에는 await 를 붙혀줌
-        const movies = await axios.get("https://yts-proxy.now.sh/list_movies.json");
+        // const movies = await axios.get("https://yts-proxy.now.sh/list_movies.json");
+        // console.log(movies.data.data.movies);
+
+        const {
+            data: {
+                data: {movies},
+            },
+        } = await axios.get("https://yts-proxy.now.sh/list_movies.json?sort_by=rating");
+        this.setState({movies, isLoading: false}) // state 의 키와 대입할 변수명이 같으면, 한번만 써도됨
+        // console.log(movies);
+
     }
 
     componentDidMount() {
@@ -168,8 +180,45 @@ class App extends React.Component {
         //     }
 
     render() {
-        const { isLoading } = this.state;
-        return <div>{ isLoading ? 'Loading ...' : "we are ready"} </div>;
+        const { isLoading, movies } = this.state;
+        return (
+          <section class="container">
+              {isLoading ? (
+                  <div class="loader">
+                      <span class="loader__text">Loading...</span>
+                  </div>
+              ) : (
+                  <div class="movies">
+                      {
+                        movies.map(movie => (
+                            < Movie
+                                key= {movie.id}
+                                id = {movie.id}
+                                year = {movie.year}
+                                title={movie.title}
+                                summary={movie.summary}
+                                poster={movie.medium_cover_image}
+                            />
+                        ))}
+                  </div>
+              )}
+          </section>
+        );
+        // return <div>{ isLoading ? 'Loading ...' :
+        //     movies.map((movie) => {
+        //         // console.log(movie);
+        //         return (
+        //         <Movie
+        //             key= {movie.id}
+        //             id = {movie.id}
+        //             year = {movie.year}
+        //             title={movie.title}
+        //             summary={movie.summary}
+        //             poster={movie.medium_cover_image}
+        //         />
+        //     );
+        //     })}
+        // </div>;
     }
 }
 
